@@ -1,90 +1,127 @@
-import java.io.BufferedWriter;
+import org.apache.commons.io.input.ReversedLinesFileReader;
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
 public class Tail {
+     private int numOfChars;
+     private int  numOfString;
+     private String outputName;
+     private ArrayList<String> inputNames;
 
 
-    Integer numOfChars;
-    Integer numOfStrings;
-
-    public Tail(Integer numOfChars, Integer numOfStrings) {
+    public Tail(Integer numOfChars, Integer numOfString, String outputName ,ArrayList<String> inputNames) {
         this.numOfChars = numOfChars;
-        this.numOfStrings = numOfStrings;
+        this.numOfString = numOfString;
+        this.outputName = outputName;
+        this.inputNames = inputNames;
     }
 
-    public List<String> tailList(ArrayList<String> text) {
-        if(!text.equals(new ArrayList<String>())) {
-            if (numOfChars == null && numOfStrings == null) numOfStrings = 10;
-            if (numOfStrings != null) {
-                if (numOfStrings > text.size()) throw new IllegalArgumentException("количество заданных строк для вывода" +
-                         "больше чем количество строк в заданном тексте");
-                return text.subList(text.size() - numOfStrings, text.size());
-            } else {
-                int newNumOfChars = numOfChars;
-                List<String> result = new ArrayList<>();
-                int i = 1;
-                while (text.get(text.size() - i).length() <= newNumOfChars) {
-                    result.add(text.get(text.size() - i));
-                    newNumOfChars -= text.get(text.size() - i).length();
-                    i++;
-                    if (i > text.size()) throw new IllegalArgumentException("заданное кол-во символов больше чем" +
-                            "кол-во символов в заданном тексте");
+
+
+    public List<String> run() throws IOException {
+        List<String> result;
+        if (numOfChars == 0) {
+            if (numOfString != 0) result = separateLine(numOfString);
+            else {
+                 result = separateLine(10);
+            }
+        } else result = separateChar(numOfChars);
+        return result;
+    }
+
+
+    public List<String> separateLine(int num) throws IOException {
+        List<String> result = new ArrayList<>();
+        if (inputNames != null) {
+            for (int i = inputNames.size() - 1; i >= 0; i--) {
+                File file1 = new File(inputNames.get(i));
+                ReversedLinesFileReader reader = new ReversedLinesFileReader(file1);
+                for (int j = 0; j < num; j++) {
+                    String r = reader.readLine();
+                    if (r != null) result.add(r);
+                    else break;
                 }
-                if (newNumOfChars != 0) {
-                    if (newNumOfChars > text.get(text.size() - i).substring(text.get(text.size() - i).length() - newNumOfChars).length())
-                        throw new IllegalArgumentException("заданное кол-во символов больше чем кол-во символов в заданном тесте");
-                    result.add(text.get(text.size() - i).substring(text.get(text.size() - i).length() - newNumOfChars));
+                if (inputNames.size() > 1)
+                    result.add(inputNames.get(i));
+            }
+            Collections.reverse(result);
+        } else {
+            ArrayList<String> inputText = new ArrayList<>();
+            Scanner scanner = new Scanner(System.in);
+            String str = "";
+            System.out.println("Ввод с консоли, напишите \"конец\", чтобы закончить ввод.");
+            while (!str.equals("конец")) {
+                str = scanner.nextLine();
+                inputText.add(str);
+            }
+            inputText.remove(inputText.size() - 1);
+            if (num > inputText.size()) return inputText;
+            else return inputText.subList(inputText.size() - num, inputText.size());
+        }
+        return result;
+    }
+
+
+    public List<String> separateChar(int num) throws IOException {
+        List<String> result = new ArrayList<>();
+        if (inputNames != null) {
+            for (int i = inputNames.size() - 1; i >= 0; i--) {
+                File file1 = new File(inputNames.get(i));
+                ReversedLinesFileReader reader = new ReversedLinesFileReader(file1);
+                while (num > 0) {
+                    String r = reader.readLine();
+                    if (r != null) {
+                        if (num >= r.length()) {
+                            result.add(r);
+                            num -= r.length();
+                        } else {
+                            result.add(r.substring(r.length() - num));
+                            break;
+                        }
+                    } else break;
                 }
-                return result;
+                if (inputNames.size() > 1) result.add(inputNames.get(i));
+            }
+            Collections.reverse(result);
+        }
+        else {
+            List<String> inputText = new ArrayList<>();
+            Scanner scanner = new Scanner(System.in);
+            String str = "";
+            System.out.println("Ввод с консоли, напишите \"конец\", чтобы закончить ввод.");
+            while (!str.equals("конец")) {
+                str = scanner.nextLine();
+                inputText.add(str);
+            }
+            inputText.remove(inputText.size() - 1);
+            for (int i = inputText.size() - 1; i >= 0; i--) {
+                if (num >= inputText.get(i).length()) {
+                    result.add(inputText.get(i));
+                    num -= inputText.get(i).length();
+                } else {
+                    result.add(inputText.get(i).substring(inputText.get(i).length() - num));
+                    break;
+                }
             }
         }
-        return new ArrayList<>();
-    }
-
-    public static void write(List<String> text, String outputName, String inputName, BufferedWriter writer) throws IOException {
-        if (!text.equals(new ArrayList<String>())) {
-            if (outputName != null) {
-                if (inputName != null) {
-                    writer.write(inputName);
-                    writer.newLine();
-                    writer.flush();
-                }
-                for (int i = text.size() - 1; i>=0; i--) {
-                    writer.write(text.get(i));
-                    writer.newLine();
-                    writer.flush();
-                }
-            } else {
-                if (inputName != null) System.out.println(inputName);
-                for (String aText : text) {
-                    System.out.println(aText);
-                }
-            }
-        }
-    }
-
-    public static ArrayList<String> read(String inputName) throws IOException {
-        ArrayList<String> text = new ArrayList<>();
-        if (inputName == null) {
-            System.out.println("напечатайте свой тест здесь и напишите \"close\", чтобы закончить ввод");
-            Scanner reader = new Scanner(System.in);
-            String temp = reader.nextLine();
-            while (!temp.equals("close")) {
-                text.add(temp);
-        temp = reader.nextLine();
-    }
-            reader.close();
-} else {
-        Scanner reader = new Scanner(Paths.get(inputName));
-        while (reader.hasNextLine()) {
-        text.add(reader.nextLine());
-        }
-        }
-        return text;
+        return result;
     }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

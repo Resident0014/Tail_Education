@@ -10,45 +10,43 @@ import java.util.List;
 public class Launcher {
 
     @Option(name = "-c", usage = "Num of returning symbols", forbids = {"-n"})
-    private int numChar;
+    private int numChar = 0;
 
     @Option(name = "-n", usage = "Num of returning strings", forbids = {"-c"})
-    private int numStr;
+    private int numStr = 0;
 
     @Option(name = "-o", usage = "Name of output file")
     private String ofile;
 
-    @Argument(usage = "Files input", metaVar = "List<String>")
-    private List<String> inputFiles = new ArrayList<>();
+    @Argument(required = true, index = 0, usage = "FileInput")
+    private ArrayList<String> inputFiles;
 
 
-    public static void main(String[] args) {
-        new Launcher().run(args);
+    public static void main(String[] args) throws IOException {
+        new Launcher().start(args);
     }
 
-    private void run(String[] args) {
-        CmdLineParser parser = new CmdLineParser(this);
+    private void start(String[] args) throws IOException {
+        CmdLineParser parse = new CmdLineParser(this);
         try {
-            parser.parseArgument(args);
-        } catch (CmdLineException e) {
-            System.err.println(e.getMessage());
+            parse.parseArgument(args);
+        } catch (CmdLineException exc) {
+            System.err.println(exc.getMessage());
             System.err.println("Expected argument: [-c num| -n num] [-o ofile] file0 file1 file2 ...");
-            parser.printUsage(System.err);
+            parse.printUsage(System.err);
         }
-
-        Tail sample = new Tail(numChar, numStr);
-        for (String inputFile : inputFiles) System.out.println(inputFile);
-        if (sample.numOfChars != null && sample.numOfStrings != null) throw new
-                IllegalArgumentException("Допускается только использование -с или -n");
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(ofile));
-            if (inputFiles.size() > 1) {
-                for (String inputFile : inputFiles)
-                    Tail.write(sample.tailList(Tail.read(inputFile)), ofile, inputFile, writer);
-            } else
-                Tail.write(sample.tailList(Tail.read(inputFiles.get(0))), ofile, null, writer);
-        } catch (IOException e) {
-            System.err.println(e.getMessage());
+        Tail tail = new Tail(numChar, numStr, ofile ,inputFiles);
+        List<String> result = tail.run();
+        if (ofile != null) {
+            File file1 = new File(ofile);
+            BufferedWriter writer = new BufferedWriter(new FileWriter(file1));
+            for (String res1 : result) {
+                writer.write(res1 + System.lineSeparator());
+            }
+            writer.close();
+        } else {
+            for (String line : result) System.out.println(line);
         }
     }
 }
+
