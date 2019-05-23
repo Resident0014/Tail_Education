@@ -7,10 +7,10 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Tail {
-     private int numOfChars;
-     private int  numOfString;
-     private String outputName;
-     private ArrayList<String> inputNames;
+    private int numOfChars;
+    private int numOfString;
+    private String outputName;
+    private ArrayList<String> inputNames;
 
 
     public Tail(Integer numOfChars, Integer numOfString, String outputName ,ArrayList<String> inputNames) {
@@ -21,13 +21,13 @@ public class Tail {
     }
 
 
-
     public List<String> run() throws IOException {
+        if (numOfChars > 0 && numOfString > 0) throw new IllegalArgumentException();
         List<String> result;
         if (numOfChars == 0) {
             if (numOfString != 0) result = separateLine(numOfString);
             else {
-                 result = separateLine(10);
+                result = separateLine(10);
             }
         } else result = separateChar(numOfChars);
         return result;
