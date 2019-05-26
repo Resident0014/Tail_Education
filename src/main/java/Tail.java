@@ -1,4 +1,7 @@
 import org.apache.commons.io.input.ReversedLinesFileReader;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -7,34 +10,15 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Tail {
-    private int numOfChars;
-    private int numOfString;
-    private String outputName;
-    private ArrayList<String> inputNames;
+    private static ArrayList<String> inputNames;
 
 
-    public Tail(Integer numOfChars, Integer numOfString, String outputName ,ArrayList<String> inputNames) {
-        this.numOfChars = numOfChars;
-        this.numOfString = numOfString;
-        this.outputName = outputName;
-        this.inputNames = inputNames;
+    public Tail(ArrayList<String> inputNames) {
+        Tail.inputNames = inputNames;
     }
 
 
-    public List<String> run() throws IOException {
-        if (numOfChars > 0 && numOfString > 0) throw new IllegalArgumentException();
-        List<String> result;
-        if (numOfChars == 0) {
-            if (numOfString != 0) result = separateLine(numOfString);
-            else {
-                result = separateLine(10);
-            }
-        } else result = separateChar(numOfChars);
-        return result;
-    }
-
-
-    public List<String> separateLine(int num) throws IOException {
+    public static List<String> separateLine(int num) throws IOException {
         List<String> result = new ArrayList<>();
         if (inputNames != null) {
             for (int i = inputNames.size() - 1; i >= 0; i--) {
@@ -53,12 +37,11 @@ public class Tail {
             ArrayList<String> inputText = new ArrayList<>();
             Scanner scanner = new Scanner(System.in);
             String str = "";
-            System.out.println("Ввод с консоли, напишите \"конец\", чтобы закончить ввод.");
-            while (!str.equals("конец")) {
+            while (scanner.hasNextLine()) {
                 str = scanner.nextLine();
                 inputText.add(str);
             }
-            inputText.remove(inputText.size() - 1);
+
             if (num > inputText.size()) return inputText;
             else return inputText.subList(inputText.size() - num, inputText.size());
         }
@@ -66,7 +49,7 @@ public class Tail {
     }
 
 
-    public List<String> separateChar(int num) throws IOException {
+    public static List<String> separateChar(int num) throws IOException {
         List<String> result = new ArrayList<>();
         if (inputNames != null) {
             for (int i = inputNames.size() - 1; i >= 0; i--) {
@@ -92,12 +75,12 @@ public class Tail {
             List<String> inputText = new ArrayList<>();
             Scanner scanner = new Scanner(System.in);
             String str = "";
-            System.out.println("Ввод с консоли, напишите \"конец\", чтобы закончить ввод.");
-            while (!str.equals("конец")) {
+
+            while (scanner.hasNextLine()) {
                 str = scanner.nextLine();
                 inputText.add(str);
             }
-            inputText.remove(inputText.size() - 1);
+
             for (int i = inputText.size() - 1; i >= 0; i--) {
                 if (num >= inputText.get(i).length()) {
                     result.add(inputText.get(i));

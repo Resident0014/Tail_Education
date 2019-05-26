@@ -25,6 +25,7 @@ public class Launcher {
         new Launcher().start(args);
     }
 
+
     private void start(String[] args) throws IOException {
         CmdLineParser parse = new CmdLineParser(this);
         try {
@@ -34,8 +35,13 @@ public class Launcher {
             System.err.println("Expected argument: [-c num| -n num] [-o ofile] file0 file1 file2 ...");
             parse.printUsage(System.err);
         }
-        Tail tail = new Tail(numChar, numStr, ofile ,inputFiles);
-        List<String> result = tail.run();
+        new Tail(inputFiles);
+        if (numStr > 0 && numChar > 0) throw new IllegalArgumentException();
+        List<String> result;
+        if (numChar == 0) {
+            if (numStr != 0) result = Tail.separateLine(numStr);
+            else result = Tail.separateLine(10);
+        } else result = Tail.separateChar(numChar);
         if (ofile != null) {
             File file1 = new File(ofile);
             BufferedWriter writer = new BufferedWriter(new FileWriter(file1));
